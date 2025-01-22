@@ -3,22 +3,17 @@ import numpy as np
 import pickle as pk
 import streamlit as st
 
-# Load the trained model
 model = pk.load(open('model.pkl', 'rb'))
 
-# Set Streamlit header
 st.header('🚗 Car Price Prediction ML Model')
 
-# Load and preprocess data
 cars_data = pd.read_csv('Cardetails.csv')
 
-# Extract car brand names
 def get_brand_name(car_name):
     return car_name.split(' ')[0].strip()
 
 cars_data['name'] = cars_data['name'].apply(get_brand_name)
 
-# Collect user inputs
 name = st.selectbox('Select Car Brand', cars_data['name'].unique())
 year = st.slider('Car Manufactured Year', 1994, 2024)
 km_driven = st.slider('Number of Kilometers Driven', 11, 200000)
@@ -31,14 +26,12 @@ engine = st.slider('Engine Capacity (CC)', 700, 5000)
 max_power = st.slider('Maximum Power (HP)', 0, 200)
 seats = st.slider('Number of Seats', 2, 10)
 
-# Predict button functionality
 if st.button("Predict"):
     input_data = pd.DataFrame(
         [[name, year, km_driven, fuel, seller_type, transmission, owner, mileage, engine, max_power, seats]],
         columns=['name', 'year', 'km_driven', 'fuel', 'seller_type', 'transmission', 'owner', 'mileage', 'engine', 'max_power', 'seats']
     )
-    
-    # Mapping categorical variables
+
     mappings = {
         'owner': {'First Owner': 1, 'Second Owner': 2, 'Third Owner': 3, 
                   'Fourth & Above Owner': 4, 'Test Drive Car': 5},
@@ -47,12 +40,10 @@ if st.button("Predict"):
         'transmission': {'Manual': 1, 'Automatic': 2},
         'name': {brand: i+1 for i, brand in enumerate(cars_data['name'].unique())}
     }
-    
+
     for col, mapping in mappings.items():
         input_data[col].replace(mapping, inplace=True)
-    
-    # Predict car price
+
     car_price = model.predict(input_data)
 
-    # Display the result
     st.success(f'💰 Predicted Car Price: ₹ {car_price[0]:,.2f}')
